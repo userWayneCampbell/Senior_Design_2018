@@ -9,28 +9,22 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using PythonLib;
 
 
 namespace MainApp_2
 {
     public partial class Main : Form
     {
-        public DateTime IT = DateTime.Now;
-        public string initialTimeString;
         public Main()
         {
             InitializeComponent();
-            initialTimeString = IT.Year.ToString() + "_" +
-                IT.Month.ToString() + "_" +
-                IT.Day.ToString() + "_" +
-                IT.Hour.ToString() + "_" +
-                IT.Minute.ToString() + "_" +
-                IT.Second.ToString();
+            PythonLib.Init.IntFilePathDate();
         }
 
         private void btn_Choose_Click(object sender, EventArgs e)
         {
-            Form ChooseForm = new Segment_Chooser.Main(initialTimeString);
+            Form ChooseForm = new Segment_Chooser.Main(PythonLib.Init.filepathDate);
             ChooseForm.Show();
         }
 
@@ -41,7 +35,7 @@ namespace MainApp_2
         /// <param name="e"></param>
         private void btn_testRunningPython_Click(object sender, EventArgs e)
         {
-            Form test = new PythonService(initialTimeString);
+            Form test = new PythonService(PythonLib.Init.filepathDate);
             test.Show();
         }
 

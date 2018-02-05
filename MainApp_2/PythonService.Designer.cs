@@ -37,7 +37,6 @@
             this.ClientSize = new System.Drawing.Size(458, 204);
             this.Name = "PythonService";
             this.Text = "PythonService";
-            this.Load += new System.EventHandler(this.PythonService_Load);
             this.ResumeLayout(false);
 
         }

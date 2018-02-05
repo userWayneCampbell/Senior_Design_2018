@@ -87,6 +87,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PythonLib\PythonLib.csproj">
+      <Project>{2b1324a0-c084-4808-bfa7-e790902c7293}</Project>
+      <Name>PythonLib</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Segment_Chooser\Segment_Chooser.csproj">
       <Project>{65e43a6e-d4c1-4614-98f4-2f8d5d678f14}</Project>
       <Name>Segment_Chooser</Name>

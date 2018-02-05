@@ -23,17 +23,7 @@ namespace MainApp_2
             string ShowOutput = " false";
             Thread thread = new Thread(() => run_cmd("../../../Python/savepicture.py", DateString + ShowOutput));
             thread.Start();
-            //run_cmd("../../../Python/savepicture.py", initialTimeString + ShowOutput);
         }
-
-        //protected override void OnLoad(EventArgs e)
-        //{
-        //    Visible = false; // Hide form window.
-        //    ShowInTaskbar = false; // Remove from taskbar.
-        //    Opacity = 0;
-
-        //    base.OnLoad(e);
-        //}
 
         private void run_cmd(string cmd, string args)
         {
@@ -51,11 +41,6 @@ namespace MainApp_2
                     Console.Write(result);
                 }
             }
-        }
-
-        private void PythonService_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }
