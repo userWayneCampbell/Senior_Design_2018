@@ -9,6 +9,8 @@ python tf_files/label_images_new.py --graph=tf_files/retrained_graph.pb --image=
 
 PythonVideo:
 python tf_files/label_images_new_loop.py --graph=tf_files/retrained_graph.pb --image=tf_files/saveTestImage.jpg
+-Removed all nodes that don't lead to output
+python tf_files/label_images_new_loop.py --graph=tf_files/optimized_graph.pb --image=tf_files/saveTestImage.jpg
 
 
 LOG FILE:

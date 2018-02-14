@@ -126,7 +126,8 @@ if __name__ == "__main__":
     output_operation = graph.get_operation_by_name(output_name);
 
     #Capture Video to send to created graph
-    vc = cv2.VideoCapture("tf_files/test_videos/20180213_191717.mp4")
+    #vc = cv2.VideoCapture("tf_files/test_videos/20180213_191717.mp4")
+    vc = cv2.VideoCapture(0)
 
     # Get Frame to test for camera connection
     if vc.isOpened(): 
