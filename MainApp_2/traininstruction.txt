@@ -1,0 +1,15 @@
+TRAIN NETWORK:
+python -m scripts.retrain --bottleneck_dir=tf_files/bottlenecks --model_dir=tf_files/models/ --summaries_dir=tf_files/training_summaries/mobilenet_0.50_244 --output_graph=tf_files/retrained_graph.pb --output_labels=tf_files/retrained_labels.txt --architecture mobilenet_1.0_224  --image_dir=tf_files/Personal_Car_Files
+
+USE NETWORK ON IMAGE:
+python -m scripts.label_image --graph=tf_files/retrained_graph.pb --image=tf_files/test_images/car3.jpg
+
+NEW:
+python tf_files/label_images_new.py --graph=tf_files/retrained_graph.pb --image=tf_files/test_images/car3.jpg
+
+PythonVideo:
+python tf_files/label_images_new_loop.py --graph=tf_files/retrained_graph.pb --image=tf_files/saveTestImage.jpg
+
+
+LOG FILE:
+PS C:\Capstone_Projects\Car_Spots\tf_files\models\mobilenet_v1_1.0_224> tensorboard --logdir=traning/

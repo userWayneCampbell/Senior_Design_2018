@@ -25,7 +25,7 @@ namespace MainApp_2
         private void btn_Choose_Click(object sender, EventArgs e)
         {
             Form ChooseForm = new Segment_Chooser.Main(PythonLib.Init.filepathDate);
-            ChooseForm.Show();
+            ChooseForm.
         }
 
         /// <summary>
