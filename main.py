@@ -1,5 +1,6 @@
 from tkinter import *
 import os
+from time import gmtime, strftime
 
 class Window(Frame):
 
@@ -39,6 +40,10 @@ class Window(Frame):
     #Python Exit Command
     def client_exit(self):
         exit()
+
+#Save time for directory creation
+directory = "Picture_Saves/" + strftime("%Y_%m_%d_%H_%M_%S", gmtime())
+print(directory)
 
 #Display Menu
 root = Tk()
