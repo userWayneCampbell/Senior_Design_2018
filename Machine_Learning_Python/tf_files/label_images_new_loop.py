@@ -1,21 +1,3 @@
-# Copyright 2017 The TensorFlow Authors. All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-# ==============================================================================
-
-
-
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -76,9 +58,9 @@ def load_labels(label_file):
     return label
 
 if __name__ == "__main__":
-    file_name = "tf_files/flower_photos/daisy/3475870145_685a19116d.jpg"
-    model_file = "tf_files/retrained_graph.pb"
-    label_file = "tf_files/retrained_labels.txt"
+    file_name = ""
+    model_file = "Machine_Learning_Python/tf_files/retrained_graph.pb"
+    label_file = "Machine_Learning_Python/tf_files/retrained_labels.txt"
     input_height = 224
     input_width = 224
     input_mean = 128
@@ -126,7 +108,8 @@ if __name__ == "__main__":
     output_operation = graph.get_operation_by_name(output_name);
 
     #Capture Video to send to created graph
-    vc = cv2.VideoCapture("tf_files/test_videos/20180213_191717.mp4")
+    #vc = cv2.VideoCapture("tf_files/test_videos/20180213_191717.mp4")
+    vc = cv2.VideoCapture(0)
 
     # Get Frame to test for camera connection
     if vc.isOpened(): 
