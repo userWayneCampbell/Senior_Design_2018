@@ -15,6 +15,10 @@ import tensorflow as tf
 #Disable CPU instruction set
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
+numberOfParkingSpots = 0 
+readerOfCSVData = []
+currentCSVfile = ""
+
 def load_graph(model_file):
   graph = tf.Graph()
   graph_def = tf.GraphDef()
@@ -58,20 +62,18 @@ def load_labels(label_file):
         label.append(l.rstrip())
     return label
 
-#Print CSV Data
-def printCSVData(name):
+#Read in CSV Data and Save to variables
+def ReadCSVData():
+    global numberOfParkingSpots
+    global readerOfCSVData
+    global currentCSVfile
     with open('Choose_Parking_Spots/currentUsed.csv','r') as fp:
         reader = csv.reader(fp, delimiter=',')
-        currentCSVfile = ""
         for row in reader:
             currentCSVfile += ''.join(row)
-        print(currentCSVfile)
-    with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
-        reader = csv.reader(np, delimiter=',')
-        print("[{0}]".format(', '.join(map(str, reader))))
 
 if __name__ == "__main__":
-    printCSVData("")
+    ReadCSVData()
     file_name = ""
     model_file = "Machine_Learning_Python/tf_files/retrained_graph.pb"
     label_file = "Machine_Learning_Python/tf_files/retrained_labels.txt"
@@ -123,7 +125,7 @@ if __name__ == "__main__":
 
     #Capture Video to send to created graph
     #vc = cv2.VideoCapture("tf_files/test_videos/20180213_191717.mp4")
-    vc = cv2.VideoCapture(0)
+    vc = cv2.VideoCapture(1)
 
     # Get Frame to test for camera connection
     if vc.isOpened(): 
@@ -139,32 +141,25 @@ if __name__ == "__main__":
     print(os.getcwd() + '//tf_files//saveTestImage.jpg')
     cv2.imwrite(os.getcwd() + '//tf_files//saveTestImage.jpg', frame )
 
+    with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
+            readerOfCSVData = csv.reader(np, delimiter=',')
+            for row in readerOfCSVData:
+                numberOfParkingSpots = int(row[0])
+
     while rval:
-        cv2.imshow('frame',frame)
-        cv2.imwrite(os.getcwd() + '//tf_files//saveTestImage.jpg', frame )
-        t = read_tensor_from_image_file(file_name,
-                                    input_height=input_height,
-                                    input_width=input_width,
-                                    input_mean=input_mean,
-                                    input_std=input_std)
-
-        with tf.Session(graph=graph) as sess:
-            start = time.time()
-            results = sess.run(output_operation.outputs[0],
-                            {input_operation.outputs[0]: t})
-            end=time.time()
-        results = np.squeeze(results)
-
-        top_k = results.argsort()[-5:][::-1]
-        labels = load_labels(label_file)
-
-        print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
-
-        for i in top_k:
-            print(labels[i], results[i])
-
-        rval, frame = vc.read()
-        key = cv2.waitKey(1)
-        if key == 27: # exit on ESC
-            break
+        #Loop through csv data
+        cv2.imshow('frame', frame)
+        with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
+            readerOfCSVData = csv.reader(np, delimiter=',')
+            for row in readerOfCSVData:
+                print("0:" + row[1] + " 1:" + row[2] + " 2:" + row[3] + " 3:" + row[4])
+                cv2.rectangle(frame, (int(row[0]),int(row[1])), (int(row[2]), int(row[3])), (0,255,0),2)
+                cv2.imshow('frame', frame)
+                print(row)
+            print("Number Of Parking Spots: " + str(numberOfParkingSpots))
+            rval, frame = vc.read()
+            key = cv2.waitKey(1)
+            if key == 27: # exit on ESC
+                break
     vc.release()
+    exit()

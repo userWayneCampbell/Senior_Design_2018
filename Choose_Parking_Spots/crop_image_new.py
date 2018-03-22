@@ -1,5 +1,8 @@
 import cv2
 import csv
+import time
+import os
+from time import gmtime, strftime
 from tkinter import messagebox
 from tkinter import *
 
@@ -42,11 +45,14 @@ def saveCSVData(name):
         writer.writerows(csv_data)
 
 
-#Update Initial Image
+#Get Recent Created Folder and grab image
 def returnOriginalImage():
-    image_read_path = 'Choose_Parking_Spots/20180220_180014.jpg'
+    directory = "Picture_Saves/"
+    image_directory = max([os.path.join(directory,d) for d in os.listdir(directory)], key=os.path.getmtime)
+    image_read_path = image_directory + "/initial.png"
+    print(image_read_path)
     img = cv2.imread(image_read_path,cv2.IMREAD_UNCHANGED)
-    img = cv2.resize(img, (960, 540))  
+    #img = cv2.resize(img, (960, 540))  
     return img
 
 #Used when user doesn't want to keep rectangle

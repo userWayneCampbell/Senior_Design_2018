@@ -1,6 +1,7 @@
 from tkinter import *
 import os
 from time import gmtime, strftime
+import time
 import cv2
 
 class Window(Frame):
@@ -51,7 +52,8 @@ class Window(Frame):
         exit()
 
 def saveImageToDir(dir):
-    vc = cv2.VideoCapture(0)
+    vc = cv2.VideoCapture(1)
+    time.sleep(2)
 
     # Get Frame to test for camera connection
     if vc.isOpened(): 
