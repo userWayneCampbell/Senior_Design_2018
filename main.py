@@ -43,6 +43,7 @@ class Window(Frame):
     
     #Function to run opencv with tensorflow
     def client_mainView(self):
+        os.system('python Choose_CSV/choose_csv.py')
         os.system('python Machine_Learning_Python/tf_files/label_images_new_loop.py --graph=Machine_Learning_Python/tf_files/retrained_graph.pb --image=Machine_Learning_Python/tf_files/saveTestImage.jpg')
 
     #Python Exit Command

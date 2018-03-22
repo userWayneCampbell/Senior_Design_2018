@@ -31,7 +31,8 @@ class Window(Frame):
         ButtonEntry.place(x=5,y=100)     
 
     def saveInputCSVName(self):
-        saveCSVData(self.E1.get())
+        returnCSV = saveCSVData(self.E1.get())
+        print(returnCSV)
         exit()
 
 #Save CSV Data

@@ -7,6 +7,7 @@ import argparse
 import sys
 import time
 import cv2
+import csv
 
 import numpy as np
 import tensorflow as tf
@@ -57,7 +58,20 @@ def load_labels(label_file):
         label.append(l.rstrip())
     return label
 
+#Print CSV Data
+def printCSVData(name):
+    with open('Choose_Parking_Spots/currentUsed.csv','r') as fp:
+        reader = csv.reader(fp, delimiter=',')
+        currentCSVfile = ""
+        for row in reader:
+            currentCSVfile += ''.join(row)
+        print(currentCSVfile)
+    with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
+        reader = csv.reader(np, delimiter=',')
+        print("[{0}]".format(', '.join(map(str, reader))))
+
 if __name__ == "__main__":
+    printCSVData("")
     file_name = ""
     model_file = "Machine_Learning_Python/tf_files/retrained_graph.pb"
     label_file = "Machine_Learning_Python/tf_files/retrained_labels.txt"

@@ -292,3 +292,5 @@ Picture_Saves/*
 !Picture_Saves/.keep
 
 Machine_Learning_Python/tf_files/saveTestImage.jpg
+
+Choose_Parking_Spots/csv/*
