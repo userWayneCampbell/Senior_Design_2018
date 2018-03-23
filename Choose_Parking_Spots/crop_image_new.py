@@ -83,7 +83,7 @@ def eventROI(event, x, y, flags, param):
             roi[3] = y
             print (w,y1,y2,x1,x2)
             #Create list to put into other csv list
-            temp_list = [w,y1,y2,x1,x2]
+            temp_list = [w,roi[0],roi[1],roi[2],roi[3]]
             csv_data.append(temp_list)
             #draw rectangles and save as new display image
             cv2.rectangle(backupImage, (roi[0],roi[1]), (roi[2], roi[3]), (0,255,0),2)

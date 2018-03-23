@@ -72,6 +72,52 @@ def ReadCSVData():
         for row in reader:
             currentCSVfile += ''.join(row)
 
+def give_prediction(image, input_height=299, input_width=299,
+				input_mean=0, input_std=255):
+    input_name = "file_reader"
+    output_name = "normalized"
+    np_image = np.asarray(image)
+
+    float_caster = tf.cast(np_image, tf.float32)
+    dims_expander = tf.expand_dims(float_caster, 0)
+    resized = tf.image.resize_bilinear(dims_expander, [input_height, input_width])
+    normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
+    sess = tf.Session()
+    result = sess.run(normalized)
+
+    with tf.Session(graph=graph) as sess:
+            start = time.time()
+            results = sess.run(output_operation.outputs[0],
+                            {input_operation.outputs[0]: t})
+            end=time.time()
+    results = np.squeeze(results)
+
+    top_k = results.argsort()[-5:][::-1]
+    labels = load_labels(label_file)
+    return labels, results
+    #print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
+
+    #for i in top_k:
+    #    print(labels[i], results[i])
+
+def crop_image(this_image, r0,r1,r2,r3):
+    if r0 > r2:
+        x1 = r2
+        x2 = r0
+    else:
+        x1 = r0
+        x2 = r2
+    if r1 > r3:
+        y1 = r3
+        y2 = r1
+    else:
+        y1 = r1
+        y2 = r3
+    print(y1 + " " + y2 + " " + x1 + " " + x2)
+    crop_img = this_image[int(y1) : int(y2),int(x1) : int(x2)]
+    cv2.imshow("name", crop_img)
+    return crop_img
+  
 if __name__ == "__main__":
     ReadCSVData()
     file_name = ""
@@ -151,12 +197,50 @@ if __name__ == "__main__":
         cv2.imshow('frame', frame)
         with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
             readerOfCSVData = csv.reader(np, delimiter=',')
+            #Loop through given parking spaces
             for row in readerOfCSVData:
-                print("0:" + row[1] + " 1:" + row[2] + " 2:" + row[3] + " 3:" + row[4])
-                cv2.rectangle(frame, (int(row[0]),int(row[1])), (int(row[2]), int(row[3])), (0,255,0),2)
+                #Crop Image based on csv file
+                #Find Prediction of image
+
+                #WAY WITHOUT SAVING FILE
+                ##cropped_image = crop_image(frame, row[1], row[2], row[3], row[4])
+                ##result_labels, result_result = give_prediction(cropped_image)
+
+                #WAY WITH SAVING FILE(SLOWER)
+                print(row[0])
+                #cropped_image = crop_image(frame.copy(), row[1], row[2], row[3], row[4])
+                cropped_image = frame[int(row[1]) : int(row[2]),int(row[3]) : int(row[4])]
+                height, width, channels = cropped_image.shape
+                print(height)
+                print(width)
+                ##cv2.imshow("name", cropped_image)
+                ##cv2.imwrite(os.getcwd() + '//tf_files//saveTestImage.jpg', cropped_image )
+                ##t = read_tensor_from_image_file(file_name,
+                ##                            input_height=input_height,
+                ##                           input_width=input_width,
+                ##                            input_mean=input_mean,
+                ##                            input_std=input_std)
+
+                ##with tf.Session(graph=graph) as sess:
+                ##    start = time.time()
+                ##    results = sess.run(output_operation.outputs[0],
+                ##                    {input_operation.outputs[0]: t})
+                ##    end=time.time()
+                ##results = np.squeeze(results)
+
+                ##top_k = results.argsort()[-5:][::-1]
+                ##labels = load_labels(label_file)
+
+                ##print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
+
+                ##for i in top_k:
+                ##    print(labels[i], results[i])
+
+                #Print Rectangle at position with information
+                cv2.rectangle(frame, (int(row[1]),int(row[2])), (int(row[3]), int(row[4])), (0,255,0),2)
                 cv2.imshow('frame', frame)
                 print(row)
-            print("Number Of Parking Spots: " + str(numberOfParkingSpots))
+            
             rval, frame = vc.read()
             key = cv2.waitKey(1)
             if key == 27: # exit on ESC

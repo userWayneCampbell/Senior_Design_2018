@@ -60,6 +60,9 @@ def saveImageToDir(dir):
         rval, frame = vc.read()
     else:
         rval = False
+    height, width, channels = frame.shape
+    print(height)
+    print(width)
 
     #Save One Frame, this frame is used for initial segmentation
     cv2.imwrite(os.path.join(dir,'initial.png'),frame)
