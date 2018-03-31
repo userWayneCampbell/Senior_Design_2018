@@ -118,6 +118,10 @@ def crop_image(this_image, r0,r1,r2,r3):
     crop_img = this_image[int(y1) : int(y2),int(x1) : int(x2)]
     #cv2.imshow("name", crop_img)
     return crop_img
+
+def load_image_into_numpy_array(image):
+    (im_width, im_height) = image.size
+    return np.array(image.getdata()).reshape((im_height, im_width, 3)).astype(np.uint8)
   
 if __name__ == "__main__":
     ReadCSVData()
@@ -201,20 +205,10 @@ if __name__ == "__main__":
             #Loop through given parking spaces
             for row in readerOfCSVData:
                 #Crop Image based on csv file
-                #Find Prediction of image
-
-                #WAY WITHOUT SAVING FILE
-                ##cropped_image = crop_image(frame, row[1], row[2], row[3], row[4])
-                ##result_labels, result_result = give_prediction(cropped_image)
-
-                #WAY WITH SAVING FILE(SLOWER)
-                print(row[0])
+                #Find Prediction of imag
                 cropped_image = crop_image(frame.copy(), row[1], row[2], row[3], row[4])
-                #cropped_image = frame[int(row[1]) : int(row[2]),int(row[3]) : int(row[4])]
                 height, width, channels = cropped_image.shape
-                #print(height)
-                #print(width)
-                cv2.imshow("name", cropped_image)
+                cv2.imshow(str(row[0]), cropped_image)
                 
                 #time.sleep(5)
                 ##cv2.imwrite(os.getcwd() + '//tf_files//saveTestImage.jpg', cropped_image )
@@ -224,20 +218,20 @@ if __name__ == "__main__":
                 ##                            input_mean=input_mean,
                 ##                            input_std=input_std)
 
-                ##with tf.Session(graph=graph) as sess:
-                ##    start = time.time()
-                ##    results = sess.run(output_operation.outputs[0],
-                ##                    {input_operation.outputs[0]: t})
-                ##    end=time.time()
-                ##results = np.squeeze(results)
+                with tf.Session(graph=graph) as sess:
+                    start = time.time()
+                    results = sess.run(output_operation.outputs[0],
+                                    {input_operation.outputs[0]: t})
+                    end=time.time()
+                results = np.squeeze(results)
 
-                ##top_k = results.argsort()[-5:][::-1]
-                ##labels = load_labels(label_file)
+                top_k = results.argsort()[-5:][::-1]
+                labels = load_labels(label_file)
 
-                ##print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
+                print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
 
-                ##for i in top_k:
-                ##    print(labels[i], results[i])
+                for i in top_k:
+                    print(labels[i], results[i])
 
                 #Print Rectangle at position with information
                 cv2.rectangle(frame, (int(row[1]),int(row[2])), (int(row[3]), int(row[4])), (0,255,0),2)
