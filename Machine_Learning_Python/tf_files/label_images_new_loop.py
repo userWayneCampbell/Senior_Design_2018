@@ -8,6 +8,7 @@ import sys
 import time
 import cv2
 import csv
+import time
 
 import numpy as np
 import tensorflow as tf
@@ -115,7 +116,7 @@ def crop_image(this_image, r0,r1,r2,r3):
         y2 = r3
     print(y1 + " " + y2 + " " + x1 + " " + x2)
     crop_img = this_image[int(y1) : int(y2),int(x1) : int(x2)]
-    cv2.imshow("name", crop_img)
+    #cv2.imshow("name", crop_img)
     return crop_img
   
 if __name__ == "__main__":
@@ -171,7 +172,7 @@ if __name__ == "__main__":
 
     #Capture Video to send to created graph
     #vc = cv2.VideoCapture("tf_files/test_videos/20180213_191717.mp4")
-    vc = cv2.VideoCapture(1)
+    vc = cv2.VideoCapture(0)
 
     # Get Frame to test for camera connection
     if vc.isOpened(): 
@@ -194,7 +195,7 @@ if __name__ == "__main__":
 
     while rval:
         #Loop through csv data
-        cv2.imshow('frame', frame)
+        #cv2.imshow('frame', frame)
         with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
             readerOfCSVData = csv.reader(np, delimiter=',')
             #Loop through given parking spaces
@@ -208,12 +209,14 @@ if __name__ == "__main__":
 
                 #WAY WITH SAVING FILE(SLOWER)
                 print(row[0])
-                #cropped_image = crop_image(frame.copy(), row[1], row[2], row[3], row[4])
-                cropped_image = frame[int(row[1]) : int(row[2]),int(row[3]) : int(row[4])]
+                cropped_image = crop_image(frame.copy(), row[1], row[2], row[3], row[4])
+                #cropped_image = frame[int(row[1]) : int(row[2]),int(row[3]) : int(row[4])]
                 height, width, channels = cropped_image.shape
-                print(height)
-                print(width)
-                ##cv2.imshow("name", cropped_image)
+                #print(height)
+                #print(width)
+                cv2.imshow("name", cropped_image)
+                
+                #time.sleep(5)
                 ##cv2.imwrite(os.getcwd() + '//tf_files//saveTestImage.jpg', cropped_image )
                 ##t = read_tensor_from_image_file(file_name,
                 ##                            input_height=input_height,
@@ -238,7 +241,7 @@ if __name__ == "__main__":
 
                 #Print Rectangle at position with information
                 cv2.rectangle(frame, (int(row[1]),int(row[2])), (int(row[3]), int(row[4])), (0,255,0),2)
-                cv2.imshow('frame', frame)
+                #cv2.imshow('frame', frame)
                 print(row)
             
             rval, frame = vc.read()

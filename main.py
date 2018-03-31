@@ -20,18 +20,15 @@ class Window(Frame):
         self.master.title("Parking Spot Predictor")
         self.pack(fill=BOTH, expand=1)
 
-        selectParkingSpotButton = Button(self, text="Define Parking Spots",command=self.client_selectParkingSpot, height = 10, width = 20)
-        selectParkingSpotButton.place(x=5, y=5)
-
-        sessionViewerButton = Button(self, text="Session Viewer",command=self.client_sessionViewer, height = 10, width = 20)
-        sessionViewerButton.place(x=205, y=5)
-
-        mainViewButton = Button(self, text="Main Viewer",command=self.client_mainView, height = 16, width = 20)
-        mainViewButton.place(x=405, y=5)
-
-        exitButton = Button(self, text="Exit", command=self.client_exit, height = 5, width = 45)
-        exitButton.place(x=5, y=175)
-
+        menu = Menu(self.master)
+        self.master.config(menu=menu)
+        
+        config = Menu(menu)
+        config.add_command(label="Create Parking Spot Setup", command=self.client_selectParkingSpot)
+        config.add_command(label="Choose Session", command=self.client_sessionViewer)
+        config.add_command(label="Load Session/Remove this eventually", command=self.client_mainView)
+        config.add_command(label="Exit", command=self.client_exit)
+        menu.add_cascade(label = "Config Options", menu = config)
        
     #Runs File to Select Parking Spaces and Save Them As A File
     def client_selectParkingSpot(self):
@@ -52,7 +49,7 @@ class Window(Frame):
         exit()
 
 def saveImageToDir(dir):
-    vc = cv2.VideoCapture(1)
+    vc = cv2.VideoCapture(0)
     time.sleep(2)
 
     # Get Frame to test for camera connection
