@@ -196,51 +196,57 @@ if __name__ == "__main__":
             readerOfCSVData = csv.reader(np, delimiter=',')
             for row in readerOfCSVData:
                 numberOfParkingSpots = int(row[0])
-
+    frame_count = 0
+    fps_start = time.time()
     while rval:
         #Loop through csv data
         #cv2.imshow('frame', frame)
-        with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
-            readerOfCSVData = csv.reader(np, delimiter=',')
-            #Loop through given parking spaces
-            for row in readerOfCSVData:
-                #Crop Image based on csv file
-                #Find Prediction of imag
-                cropped_image = crop_image(frame.copy(), row[1], row[2], row[3], row[4])
-                height, width, channels = cropped_image.shape
-                cv2.imshow(str(row[0]), cropped_image)
+
+        #every 5 frames
+        if frame_count%5==0:
+            with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
+                readerOfCSVData = csv.reader(np, delimiter=',')
+                #Loop through given parking spaces
+                for row in readerOfCSVData:
+                    #Crop Image based on csv file
+                    #Find Prediction of imag
+                    cropped_image = crop_image(frame.copy(), row[1], row[2], row[3], row[4])
+                    height, width, channels = cropped_image.shape
+                    cv2.imshow(str(row[0]), cropped_image)
+                    cv2.imwrite(os.getcwd() + '//Machine_Learning_Python//tf_files//saveTestImage.jpg', cropped_image)
+                    
+                    t = read_tensor_from_image_file(os.getcwd() + '//Machine_Learning_Python//tf_files//saveTestImage.jpg',
+                                                input_height=input_height,
+                                               input_width=input_width,
+                                                input_mean=input_mean,
+                                                input_std=input_std)
+
+                    with tf.Session(graph=graph) as sess:
+                        start = time.time()
+                        results = sess.run(output_operation.outputs[0],
+                                        {input_operation.outputs[0]: t})
+                        end=time.time()
+                    #results = np.squeeze(results)
+                    results = results.reshape(1,-1)
+                    print(results.tolist())
+
+                    top_k = results.argsort()[-5:][::-1]
+                    labels = load_labels(label_file)
+
+                    print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
+
+                    #Print Rectangle at position with information
+                    cv2.rectangle(frame, (int(row[1]),int(row[2])), (int(row[3]), int(row[4])), (0,255,0),2)
+                    cv2.imshow('frame', frame)
+                    print(row)
+                    fps_current = time.time()
+                    #print(frame_count/(fps_current-fps_start))
                 
-                #time.sleep(5)
-                ##cv2.imwrite(os.getcwd() + '//tf_files//saveTestImage.jpg', cropped_image )
-                ##t = read_tensor_from_image_file(file_name,
-                ##                            input_height=input_height,
-                ##                           input_width=input_width,
-                ##                            input_mean=input_mean,
-                ##                            input_std=input_std)
-
-                with tf.Session(graph=graph) as sess:
-                    start = time.time()
-                    results = sess.run(output_operation.outputs[0],
-                                    {input_operation.outputs[0]: t})
-                    end=time.time()
-                results = np.squeeze(results)
-
-                top_k = results.argsort()[-5:][::-1]
-                labels = load_labels(label_file)
-
-                print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
-
-                for i in top_k:
-                    print(labels[i], results[i])
-
-                #Print Rectangle at position with information
-                cv2.rectangle(frame, (int(row[1]),int(row[2])), (int(row[3]), int(row[4])), (0,255,0),2)
-                #cv2.imshow('frame', frame)
-                print(row)
-            
             rval, frame = vc.read()
+                
             key = cv2.waitKey(1)
             if key == 27: # exit on ESC
                 break
+        frame_count += 1
     vc.release()
     exit()
