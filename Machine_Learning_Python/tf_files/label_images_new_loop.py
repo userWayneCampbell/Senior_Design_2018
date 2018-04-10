@@ -13,6 +13,8 @@ import time
 import numpy as np
 import tensorflow as tf
 
+CAMERA_INPUT = 0
+
 #Disable CPU instruction set
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -73,34 +75,7 @@ def ReadCSVData():
         for row in reader:
             currentCSVfile += ''.join(row)
 
-def give_prediction(image, input_height=299, input_width=299,
-				input_mean=0, input_std=255):
-    input_name = "file_reader"
-    output_name = "normalized"
-    np_image = np.asarray(image)
-
-    float_caster = tf.cast(np_image, tf.float32)
-    dims_expander = tf.expand_dims(float_caster, 0)
-    resized = tf.image.resize_bilinear(dims_expander, [input_height, input_width])
-    normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
-    sess = tf.Session()
-    result = sess.run(normalized)
-
-    with tf.Session(graph=graph) as sess:
-            start = time.time()
-            results = sess.run(output_operation.outputs[0],
-                            {input_operation.outputs[0]: t})
-            end=time.time()
-    results = np.squeeze(results)
-
-    top_k = results.argsort()[-5:][::-1]
-    labels = load_labels(label_file)
-    return labels, results
-    #print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
-
-    #for i in top_k:
-    #    print(labels[i], results[i])
-
+#Crops image
 def crop_image(this_image, r0,r1,r2,r3):
     if r0 > r2:
         x1 = r2
@@ -114,7 +89,7 @@ def crop_image(this_image, r0,r1,r2,r3):
     else:
         y1 = r1
         y2 = r3
-    print(y1 + " " + y2 + " " + x1 + " " + x2)
+    #print("opencv display values: " + y1 + " " + y2 + " " + x1 + " " + x2)
     crop_img = this_image[int(y1) : int(y2),int(x1) : int(x2)]
     #cv2.imshow("name", crop_img)
     return crop_img
@@ -145,6 +120,7 @@ if __name__ == "__main__":
     parser.add_argument("--input_std", type=int, help="input std")
     parser.add_argument("--input_layer", help="name of input layer")
     parser.add_argument("--output_layer", help="name of output layer")
+    parser.add_argument("--camera", help="number of opencv camera")
     args = parser.parse_args()
 
     if args.graph:
@@ -165,6 +141,9 @@ if __name__ == "__main__":
         input_layer = args.input_layer
     if args.output_layer:
         output_layer = args.output_layer
+    if args.camera:
+        CAMERA_INPUT = int(args.camera)
+        print(CAMERA_INPUT)
 
     graph = load_graph(model_file)
     
@@ -175,8 +154,7 @@ if __name__ == "__main__":
     output_operation = graph.get_operation_by_name(output_name);
 
     #Capture Video to send to created graph
-    #vc = cv2.VideoCapture("tf_files/test_videos/20180213_191717.mp4")
-    vc = cv2.VideoCapture(0)
+    vc = cv2.VideoCapture(CAMERA_INPUT)
 
     # Get Frame to test for camera connection
     if vc.isOpened(): 
@@ -195,58 +173,65 @@ if __name__ == "__main__":
     with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
             readerOfCSVData = csv.reader(np, delimiter=',')
             for row in readerOfCSVData:
+                print(row)
                 numberOfParkingSpots = int(row[0])
     frame_count = 0
     fps_start = time.time()
-    while rval:
+    with tf.Session(graph=graph) as sess:
+        print("new session")
+        while rval:
         #Loop through csv data
         #cv2.imshow('frame', frame)
 
-        #every 5 frames
-        if frame_count%5==0:
-            with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
-                readerOfCSVData = csv.reader(np, delimiter=',')
-                #Loop through given parking spaces
-                for row in readerOfCSVData:
-                    #Crop Image based on csv file
-                    #Find Prediction of imag
-                    cropped_image = crop_image(frame.copy(), row[1], row[2], row[3], row[4])
-                    height, width, channels = cropped_image.shape
-                    cv2.imshow(str(row[0]), cropped_image)
-                    cv2.imwrite(os.getcwd() + '//Machine_Learning_Python//tf_files//saveTestImage.jpg', cropped_image)
+            #every # frames
+            if frame_count%1000==0:
+                    print(frame_count)
+                
+                    with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
+                        readerOfCSVData = csv.reader(np, delimiter=',')
+                        #Loop through given parking spaces
+                        for row in readerOfCSVData:
+                            #Crop Image based on csv file
+                            #Find Prediction of imag
+                            cropped_image = crop_image(frame.copy(), row[1], row[2], row[3], row[4])
+                            height, width, channels = cropped_image.shape
+                            
+                            #Just reshape to 1 dimension
+                            cropped_image1 = cv2.resize(cropped_image, (224,224))
+                            #cv2.imshow("name", cropped_image)
+                            #cv2.imshow("name1", cropped_image1)
+                            one_dimension = cropped_image1.reshape(1,cropped_image1.shape[0],cropped_image1.shape[1],cropped_image1.shape[2])
+
+                            #Get Results from tensorflow
+                            start = time.time()
+                            results = sess.run(output_operation.outputs[0],{input_operation.outputs[0]: one_dimension})
+                            end=time.time()
+
+                            #Print Results
+                            resultList = results.tolist()
+                            print('Car Prediction: ' + str(resultList[0][0]))
+                            print('Space Prediction: ' + str(resultList[0][1]))
+                            #print('Evaluation time (1-image): {:.3f}s\n\n'.format(end-start))
+
+                            if resultList[0][0] > .1:
+                                print(str(row[0] + ' CAR = 1'))
+                                color = [0,255,0]
+                            else:
+                                print(str(row[0] + ' CAR = 0'))
+                                color = [255,0,0]
+
+                            #Print Rectangle at position with information
+                            if True:
+                                cv2.rectangle(frame, (int(row[1]),int(row[2])), (int(row[3]), int(row[4])), (color[0],color[1],color[2]),1)
+                                cv2.imshow('frame', frame)
+                            fps_current = time.time()
+                            #print(frame_count/(fps_current-fps_start))
+
+                    rval, frame = vc.read()
                     
-                    t = read_tensor_from_image_file(os.getcwd() + '//Machine_Learning_Python//tf_files//saveTestImage.jpg',
-                                                input_height=input_height,
-                                               input_width=input_width,
-                                                input_mean=input_mean,
-                                                input_std=input_std)
-
-                    with tf.Session(graph=graph) as sess:
-                        start = time.time()
-                        results = sess.run(output_operation.outputs[0],
-                                        {input_operation.outputs[0]: t})
-                        end=time.time()
-                    #results = np.squeeze(results)
-                    results = results.reshape(1,-1)
-                    print(results.tolist())
-
-                    top_k = results.argsort()[-5:][::-1]
-                    labels = load_labels(label_file)
-
-                    print('\nEvaluation time (1-image): {:.3f}s\n'.format(end-start))
-
-                    #Print Rectangle at position with information
-                    cv2.rectangle(frame, (int(row[1]),int(row[2])), (int(row[3]), int(row[4])), (0,255,0),2)
-                    cv2.imshow('frame', frame)
-                    print(row)
-                    fps_current = time.time()
-                    #print(frame_count/(fps_current-fps_start))
-                
-            rval, frame = vc.read()
-                
-            key = cv2.waitKey(1)
-            if key == 27: # exit on ESC
-                break
-        frame_count += 1
+                    key = cv2.waitKey(1)
+                    if key == 27: # exit on ESC
+                        break
+            frame_count += 1
     vc.release()
     exit()

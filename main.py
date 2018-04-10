@@ -4,6 +4,8 @@ from time import gmtime, strftime
 import time
 import cv2
 
+CAMERA_INPUT = 1
+
 class Window(Frame):
 
     def __init__(self, master=None):
@@ -42,14 +44,14 @@ class Window(Frame):
     #Function to run opencv with tensorflow
     def client_mainView(self):
         os.system('python Choose_CSV/choose_csv.py')
-        os.system('python Machine_Learning_Python/tf_files/label_images_new_loop.py --graph=Machine_Learning_Python/tf_files/retrained_graph.pb --image=Machine_Learning_Python/tf_files/saveTestImage.jpg')
+        os.system('python Machine_Learning_Python/tf_files/label_images_new_loop.py --graph=Machine_Learning_Python/tf_files/retrained_graph.pb --image=Machine_Learning_Python/tf_files/saveTestImage.jpg --camera=' + str(CAMERA_INPUT))
 
     #Python Exit Command
     def client_exit(self):
         exit()
 
 def saveImageToDir(dir):
-    vc = cv2.VideoCapture(0)
+    vc = cv2.VideoCapture(int(CAMERA_INPUT))
     time.sleep(2)
 
     # Get Frame to test for camera connection
