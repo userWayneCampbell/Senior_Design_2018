@@ -184,8 +184,9 @@ if __name__ == "__main__":
         #cv2.imshow('frame', frame)
 
             #every # frames
-            if frame_count%1000==0:
-                    print(frame_count)
+            #if frame_count%1==0:
+            if True:
+                    #print(frame_count)
                 
                     with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
                         readerOfCSVData = csv.reader(np, delimiter=',')
@@ -202,22 +203,33 @@ if __name__ == "__main__":
                             #cv2.imshow("name1", cropped_image1)
                             one_dimension = cropped_image1.reshape(1,cropped_image1.shape[0],cropped_image1.shape[1],cropped_image1.shape[2])
 
+                            #Convert numpy to tensorflow
+                            with sess.as_default():
+                                tensor = tf.constant(one_dimension)
+                            #print(tensor)
+                            
+                            #Model Numpy to use with MobileNet
+                            resized = tf.image.resize_bilinear(tensor, [input_height, input_width])
+                            normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
+                            with sess.as_default():
+                                result = sess.run(normalized)
+
                             #Get Results from tensorflow
                             start = time.time()
-                            results = sess.run(output_operation.outputs[0],{input_operation.outputs[0]: one_dimension})
+                            results = sess.run(output_operation.outputs[0],{input_operation.outputs[0]: result})
                             end=time.time()
 
                             #Print Results
                             resultList = results.tolist()
-                            print('Car Prediction: ' + str(resultList[0][0]))
-                            print('Space Prediction: ' + str(resultList[0][1]))
+                            print(str(row[0]) + ' Car Prediction: ' + str(resultList[0][0]))
+                            #print('Space Prediction: ' + str(resultList[0][1]))
                             #print('Evaluation time (1-image): {:.3f}s\n\n'.format(end-start))
 
-                            if resultList[0][0] > .1:
-                                print(str(row[0] + ' CAR = 1'))
+                            if resultList[0][0] > .2:
+                                #print(str(row[0] + ' CAR = 1'))
                                 color = [0,255,0]
                             else:
-                                print(str(row[0] + ' CAR = 0'))
+                                #print(str(row[0] + ' CAR = 0'))
                                 color = [255,0,0]
 
                             #Print Rectangle at position with information
@@ -225,7 +237,10 @@ if __name__ == "__main__":
                                 cv2.rectangle(frame, (int(row[1]),int(row[2])), (int(row[3]), int(row[4])), (color[0],color[1],color[2]),1)
                                 cv2.imshow('frame', frame)
                             fps_current = time.time()
-                            #print(frame_count/(fps_current-fps_start))
+                            print(frame_count/(fps_current-fps_start))
+
+                    #Clear Screen
+                    #os.system('cls' if os.name == 'nt' else 'clear')
 
                     rval, frame = vc.read()
                     
@@ -233,5 +248,6 @@ if __name__ == "__main__":
                     if key == 27: # exit on ESC
                         break
             frame_count += 1
+            #cv2.imshow('frame', frame)
     vc.release()
     exit()
