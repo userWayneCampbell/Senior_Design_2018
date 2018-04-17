@@ -13,6 +13,9 @@ import time
 import numpy as np
 import tensorflow as tf
 
+import imutils
+from imutils.video import *
+
 CAMERA_INPUT = 0
 
 #Disable CPU instruction set
@@ -32,31 +35,6 @@ def load_graph(model_file):
     tf.import_graph_def(graph_def)
 
   return graph
-
-def read_tensor_from_image_file(file_name, input_height=299, input_width=299,
-				input_mean=0, input_std=255):
-  input_name = "file_reader"
-  output_name = "normalized"
-  file_reader = tf.read_file(file_name, input_name)
-  if file_name.endswith(".png"):
-    image_reader = tf.image.decode_png(file_reader, channels = 3,
-                                       name='png_reader')
-  elif file_name.endswith(".gif"):
-    image_reader = tf.squeeze(tf.image.decode_gif(file_reader,
-                                                  name='gif_reader'))
-  elif file_name.endswith(".bmp"):
-    image_reader = tf.image.decode_bmp(file_reader, name='bmp_reader')
-  else:
-    image_reader = tf.image.decode_jpeg(file_reader, channels = 3,
-                                        name='jpeg_reader')
-  float_caster = tf.cast(image_reader, tf.float32)
-  dims_expander = tf.expand_dims(float_caster, 0)
-  resized = tf.image.resize_bilinear(dims_expander, [input_height, input_width])
-  normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
-  sess = tf.Session()
-  result = sess.run(normalized)
-
-  return result
 
 def load_labels(label_file):
     label = []
@@ -94,10 +72,7 @@ def crop_image(this_image, r0,r1,r2,r3):
     #cv2.imshow("name", crop_img)
     return crop_img
 
-def load_image_into_numpy_array(image):
-    (im_width, im_height) = image.size
-    return np.array(image.getdata()).reshape((im_height, im_width, 3)).astype(np.uint8)
-  
+
 if __name__ == "__main__":
     ReadCSVData()
     file_name = ""
@@ -154,21 +129,15 @@ if __name__ == "__main__":
     output_operation = graph.get_operation_by_name(output_name);
 
     #Capture Video to send to created graph
-    vc = cv2.VideoCapture(CAMERA_INPUT)
+    vs = WebcamVideoStream(src=int(CAMERA_INPUT)).start()
 
     # Get Frame to test for camera connection
-    if vc.isOpened(): 
-        rval, frame = vc.read()
-    else:
-        rval = False
+    frame = vs.read()
+    cv2.imshow('frame', frame)
+    #height, width, channels = frame.shape
 
-    height, width, channels = frame.shape
 
-    print(height)
-    print(width)
-    print(file_name)
-    print(os.getcwd() + '//tf_files//saveTestImage.jpg')
-    cv2.imwrite(os.getcwd() + '//tf_files//saveTestImage.jpg', frame )
+    #cv2.imwrite(os.getcwd() + '//tf_files//saveTestImage.jpg', frame )
 
     with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
             readerOfCSVData = csv.reader(np, delimiter=',')
@@ -179,7 +148,7 @@ if __name__ == "__main__":
     fps_start = time.time()
     with tf.Session(graph=graph) as sess:
         print("new session")
-        while rval:
+        while True:
         #Loop through csv data
         #cv2.imshow('frame', frame)
 
@@ -242,12 +211,12 @@ if __name__ == "__main__":
                     #Clear Screen
                     #os.system('cls' if os.name == 'nt' else 'clear')
 
-                    rval, frame = vc.read()
-                    
+                    frame = vs.read()
+                    frame_count += 1
                     key = cv2.waitKey(1)
                     if key == 27: # exit on ESC
                         break
-            frame_count += 1
+            #frame_count += 1
             #cv2.imshow('frame', frame)
-    vc.release()
+    vs.stop()
     exit()
