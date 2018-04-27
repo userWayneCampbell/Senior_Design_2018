@@ -5,7 +5,7 @@ import time
 import cv2
 from imutils.video import *
 
-CAMERA_INPUT = 0
+CAMERA_INPUT = 1
 
 class Window(Frame):
 
@@ -45,7 +45,7 @@ class Window(Frame):
     #Function to run opencv with tensorflow
     def client_mainView(self):
         os.system('python Choose_CSV/choose_csv.py')
-        os.system('python photo_booth.py --output output')
+        os.system('python startMainDisplay.py --output output')
         #os.system('python Machine_Learning_Python/tf_files/label_images_new_loop.py --graph=Machine_Learning_Python/tf_files/retrained_graph.pb --image=Machine_Learning_Python/tf_files/saveTestImage.jpg --camera=' + str(CAMERA_INPUT))
 
     #Python Exit Command
