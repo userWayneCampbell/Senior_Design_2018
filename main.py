@@ -1,11 +1,14 @@
 from tkinter import *
+from tkinter import messagebox
 import os
 from time import gmtime, strftime
 import time
 import cv2
 from imutils.video import *
+import shutil
 
-CAMERA_INPUT = 1
+#OpenCV port for camera input (Change if you want to use second camera)
+CAMERA_INPUT = 0
 
 class Window(Frame):
 
@@ -20,34 +23,47 @@ class Window(Frame):
     #Creation of init_window
     def init_window(self):
 
-        self.master.title("Parking Spot Predictor")
+        self.master.title("Capstone 2018: Start Menu")
         self.pack(fill=BOTH, expand=1)
 
         menu = Menu(self.master)
         self.master.config(menu=menu)
         
         config = Menu(menu)
-        config.add_command(label="Create Parking Spot Setup", command=self.client_selectParkingSpot)
-        config.add_command(label="Choose Session", command=self.client_sessionViewer)
-        config.add_command(label="Load Session/Remove this eventually", command=self.client_mainView)
+        config.add_command(label="Create Parking Lot Session Positions", command=self.client_selectParkingSpot)
+        config.add_command(label="Delete All Sessions", command=self.client_deleteSessions)
+        config.add_command(label="Run Main Display", command=self.client_mainView)
         config.add_command(label="Exit", command=self.client_exit)
-        menu.add_cascade(label = "Config Options", menu = config)
+        menu.add_cascade(label = "Config/Run/Exit", menu = config)
+
+        about = Menu(menu)
+        about.add_command(label="Senior Project Team Info", command=self.client_Info)
+        menu.add_cascade(label = "About", menu = about)
        
     #Runs File to Select Parking Spaces and Save Them As A File
     def client_selectParkingSpot(self):
         os.system('python Choose_Parking_Spots/crop_image_new.py')
 
-    #View Sessions on live camera, and delete sessions (grab data from csv file and display it over a camera feed)
-    def client_sessionViewer(self):
-        #SessionViewerFunction()
-        exit()
+    #Delete Sessions
+    def client_deleteSessions(self):
+        shutil.rmtree(os.getcwd() + '/Choose_Parking_Spots/csv/')
+        os.makedirs(os.getcwd() + '/Choose_Parking_Spots/csv/')
     
-    #Function to run opencv with tensorflow
+    #Choose your sessions, and run tensorflow display
     def client_mainView(self):
         os.system('python Choose_CSV/choose_csv.py')
         os.system('python startMainDisplay.py --output output')
-        #os.system('python Machine_Learning_Python/tf_files/label_images_new_loop.py --graph=Machine_Learning_Python/tf_files/retrained_graph.pb --image=Machine_Learning_Python/tf_files/saveTestImage.jpg --camera=' + str(CAMERA_INPUT))
 
+    #Display Information about Senior Project Team
+    def client_Info(self):
+        win = Toplevel()
+        win.title('About')
+        win.geometry("500x100")
+        message = "Ohio Northern University Senior Design \nReal-Time Parking Monitor"
+        Label(win, text=message, font='Helvetica 10 bold').pack()
+        message = "\n Members: Wayne Campbell, Bryce Gray, Miranda Huddle, Hayden Shenfield \n Advisor: Dr. Youssfi"
+        Label(win, text=message, font='Helvetica 9').pack()
+        Button(win, text='Exit', command=win.destroy).pack()
     #Python Exit Command
     def client_exit(self):
         exit()
@@ -67,6 +83,9 @@ def saveImageToDir(dir):
 
     #Save One Frame, this frame is used for initial segmentation
     cv2.imwrite(os.path.join(dir,'initial.png'),frame)
+    time.sleep(2)
+    #Wait and Take better picture
+    cv2.imwrite(os.path.join(dir,'initial.png'),frame)
     vc.release
 
 #Save time for directory creation/Create directory
@@ -77,6 +96,6 @@ saveImageToDir(directory)
 
 #Display Menu
 root = Tk()
-root.geometry("600x280")
+root.geometry("600x150")
 app = Window(root)
 root.mainloop()  

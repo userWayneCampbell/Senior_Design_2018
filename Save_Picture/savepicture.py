@@ -10,11 +10,6 @@ import sys
 #   argv[0] = the name of the folder to create (string)
 #   argv[1] = show opencv output (-true or -false)
 
-#TESTING VAR ONLY
-#now = datetime.datetime.now()
-#dir = '//' + now.strftime("%Y_%m_%d_%H_%M_%S")
-#print (sys.argv[2])
-
 dir = '//' + sys.argv[1]
 
 #Path Of Directory to create

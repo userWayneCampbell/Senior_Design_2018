@@ -21,26 +21,24 @@ numberOfParkingSpots = 0
 readerOfCSVData = []
 currentCSVfile = ""
 
+TIMER_LENGTH = 30
 
-class PhotoBoothApp:
+
+class MainDisplay:
 	def __init__(self, vs, outputPath):
 		
-
-		# store the video stream object and output path, then initialize
-		# the most recently read frame, thread for reading frames, and
-		# the thread stop event
+		#Store stream object, output, and set all frame variables to None
 		self.vs = vs
 		self.outputPath = outputPath
 		self.frame = None
 		self.thread = None
 		self.stopEvent = None
 
-		# initialize the root window and image panel
+		# Create TK Window
 		self.root = tki.Tk()
 		self.panel = None
 
-		# start a thread that constantly pools the video sensor for
-		# the most recently read frame
+		# Thread that pools for new frames from camera
 		self.stopEvent = threading.Event()
 		self.thread = threading.Thread(target=self.videoLoop, args=())
 		self.thread.start()
@@ -93,17 +91,18 @@ class PhotoBoothApp:
 					self.frame = self.vs.read()
 					self.frame = imutils.resize(self.frame, width=640, height=480)
 
-					#Tensorflow Stuff
+					#Tensorflow Loop
 					with open('Choose_Parking_Spots/csv/' + currentCSVfile, 'r') as np:
 						readerOfCSVData = csv.reader(np, delimiter=',')
 						for row in readerOfCSVData:
+							#Resize Image for Tensorflow
 							cropped_image = crop_image(self.frame.copy(), row[1], row[2], row[3], row[4])
 							height, width, channels = cropped_image.shape
 					
 							cropped_image1 = cv2.resize(cropped_image, (224,224))
 
 							one_dimension = cropped_image1.reshape(1,cropped_image1.shape[0],cropped_image1.shape[1],cropped_image1.shape[2])
-							
+							#Start Tensorflow Session
 							with sess.as_default():
 								tensor = tf.constant(one_dimension)
 
@@ -111,11 +110,11 @@ class PhotoBoothApp:
 							normalized = tf.divide(tf.subtract(resized, [input_mean]), [input_std])
 							with sess.as_default():
 								result = sess.run(normalized)
-							
+							#Record time and get results
 							start = time.time()
 							results = sess.run(output_operation.outputs[0],{input_operation.outputs[0]: result})
 							end=time.time()
-							
+							#Debug print
 							resultList = results.tolist()
 							print(str(row[0]) + ' Car Prediction: ' + str(resultList[0][0]))
 
@@ -124,7 +123,7 @@ class PhotoBoothApp:
 							#color = [211,211,211]
 							if resultList[0][0] > .9 and carTime[int(row[0])] == 0:
 								color = [0,255,0]
-								carTime[int(row[0])] = time.time() + 30
+								carTime[int(row[0])] = time.time() + TIMER_LENGTH
 								print("Car New")
 
 							#Car Past Time
@@ -150,9 +149,7 @@ class PhotoBoothApp:
 									font = FONT_HERSHEY_COMPLEX_SMALL = 5
 									cv2.putText(self.frame,str(math.floor((carTime[int(row[0])] - time.time()) * 100) / 100),(int(row[1])-50,int(row[2])), font, 1,(255,255,255),2,cv2.LINE_AA)
 			
-					# OpenCV represents images in BGR order; however PIL
-					# represents images in RGB order, so we need to swap
-					# the channels, then convert to PIL and ImageTk format
+					#OpenCV needs BGR, PIL uses RGB, so swap channels and convert to formats
 					image = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
 					image = Image.fromarray(image)
 					image = ImageTk.PhotoImage(image)
